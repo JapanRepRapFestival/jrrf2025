@@ -15,7 +15,7 @@
             width: 100%;
             height: 100vh;
             overflow: hidden;
-            background-color: #f5f5f5;
+            background-color: rgb(255, 243, 215);
         }
 
         .map-container {
@@ -47,6 +47,7 @@
             z-index: 1000;
             display: none;
             min-width: 200px;
+            max-width: 400px;
         }
 
         .booth-info h3 {
@@ -157,7 +158,7 @@
 
             // 複数ブースの場合は配列、単一ブースの場合は文字列として処理
             const boothIdArray = Array.isArray(boothIds) ? boothIds : [boothIds];
-            
+
             if (boothIdArray.length === 1) {
                 // 単一ブースの場合の従来処理
                 const boothId = boothIdArray[0];
@@ -205,39 +206,39 @@
                 // 複数ブースの場合
                 const boothNames = boothIdArray.join('/');
                 boothTitle.textContent = `ブース ${boothNames}`;
-                
+
                 let combinedHTML = `<strong>ブース番号:</strong> ${boothNames}<br><br>`;
-                
+
                 boothIdArray.forEach((boothId, index) => {
                     const booth = boothData[boothId];
-                    
+
                     if (index > 0) {
                         combinedHTML += '<hr style="margin: 10px 0; border: 1px solid #ddd;"><br>';
                     }
-                    
+
                     if (booth && booth.title) {
                         combinedHTML += `<strong>${boothId}:</strong> ${booth.title}<br>`;
-                        
+
                         if (booth.exhibitor_name) {
                             combinedHTML += `<strong>出展者:</strong> ${booth.exhibitor_name}<br>`;
                         }
-                        
+
                         if (booth.category) {
                             combinedHTML += `<strong>カテゴリ:</strong> ${booth.category}<br>`;
                         }
-                        
+
                         if (booth.description) {
                             combinedHTML += `<strong>出展内容:</strong> ${booth.description}<br>`;
                         }
-                        
+
                         if (booth.special_info) {
                             combinedHTML += `<strong>特記事項:</strong> ${booth.special_info}<br>`;
                         }
-                        
+
                         if (booth.website && booth.website !== 'https://example.com' && booth.website.includes('http')) {
                             combinedHTML += `<strong>ウェブサイト:</strong> <a href="${booth.website}" target="_blank" rel="noopener">${booth.website}</a><br>`;
                         }
-                        
+
                         if (booth.contact && !booth.contact.includes('example.com')) {
                             combinedHTML += `<strong>連絡先:</strong> ${booth.contact}<br>`;
                         }
@@ -245,12 +246,12 @@
                         combinedHTML += `<strong>${boothId}:</strong> 詳細情報は後日公開予定<br>`;
                         combinedHTML += `<strong>エリア:</strong> ${boothId.charAt(0)}エリア<br>`;
                     }
-                    
+
                     if (index < boothIdArray.length - 1) {
                         combinedHTML += '<br>';
                     }
                 });
-                
+
                 boothDetails.innerHTML = combinedHTML;
             }
 
