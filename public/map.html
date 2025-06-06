@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JRRF2025 会場マップ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .map-svg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+
+        /* ブース情報ポップアップ */
+        .booth-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            z-index: 1000;
+            display: none;
+            min-width: 200px;
+        }
+
+        .booth-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .booth-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .booth-info .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .booth-info .close-btn:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <object class="map-svg" data="./map_250607.svg" type="image/svg+xml">
+            <img src="./map_250607.png" alt="JRRF2025 会場マップ" class="map-svg">
+        </object>
+    </div>
+
+    <div id="boothInfo" class="booth-info">
+        <button class="close-btn" onclick="hideBoothInfo()">&times;</button>
+        <h3 id="boothTitle">ブース情報</h3>
+        <p id="boothDetails">ブースの詳細情報がここに表示されます。</p>
+    </div>
+
+    <script>
+        // ブース情報データを格納する変数
+        let boothData = {};
+
+        // CSVファイルを読み込んでパースする
+        async function loadBoothData() {
+            try {
+                const response = await fetch('booth_info.csv');
+                const csvText = await response.text();
+
+                const lines = csvText.split('\n');
+                const headers = lines[0].split(',');
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line) {
+                        const values = parseCSVLine(line);
+                        if (values.length >= headers.length) {
+                            const boothId = values[0];
+                            boothData[boothId] = {
+                                title: values[1] || '',
+                                exhibitor_name: values[2] || '',
+                                description: values[3] || '',
+                                category: values[4] || '',
+                                website: values[5] || '',
+                                contact: values[6] || '',
+                                special_info: values[7] || ''
+                            };
+                        }
+                    }
+                }
+                console.log('ブース情報を読み込みました:', Object.keys(boothData).length + '件');
+            } catch (error) {
+                console.error('ブース情報の読み込みに失敗しました:', error);
+            }
+        }
+
+        // CSV行をパースする（カンマ区切りを適切に処理）
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        // ブース情報を表示（単一または複数ブース対応）
+        function showBoothInfo(boothIds) {
+            const boothInfo = document.getElementById('boothInfo');
+            const boothTitle = document.getElementById('boothTitle');
+            const boothDetails = document.getElementById('boothDetails');
+
+            // 複数ブースの場合は配列、単一ブースの場合は文字列として処理
+            const boothIdArray = Array.isArray(boothIds) ? boothIds : [boothIds];
+            
+            if (boothIdArray.length === 1) {
+                // 単一ブースの場合の従来処理
+                const boothId = boothIdArray[0];
+                const booth = boothData[boothId];
+
+                        if (booth && booth.title) {
+                boothTitle.textContent = `${booth.title} (${boothId})`;
+
+                let detailsHTML = `<strong>ブース番号:</strong> ${boothId}<br>`;
+                if (booth.exhibitor_name) {
+                    detailsHTML += `<strong>出展者:</strong> ${booth.exhibitor_name}<br>`;
+                }
+
+                if (booth.category) {
+                    detailsHTML += `<strong>カテゴリ:</strong> ${booth.category}<br>`;
+                }
+
+                if (booth.description) {
+                    detailsHTML += `<strong>出展内容:</strong> ${booth.description}<br>`;
+                }
+
+                if (booth.special_info) {
+                    detailsHTML += `<strong>特記事項:</strong> ${booth.special_info}<br>`;
+                }
+
+                if (booth.website && booth.website !== 'https://example.com' && booth.website.includes('http')) {
+                    detailsHTML += `<strong>ウェブサイト:</strong> <a href="${booth.website}" target="_blank" rel="noopener">${booth.website}</a><br>`;
+                }
+
+                if (booth.contact && !booth.contact.includes('example.com')) {
+                    detailsHTML += `<strong>連絡先:</strong> ${booth.contact}`;
+                }
+
+                boothDetails.innerHTML = detailsHTML;
+            } else {
+                // デフォルト情報
+                boothTitle.textContent = `ブース ${boothId}`;
+                boothDetails.innerHTML = `
+                    <strong>ブース番号:</strong> ${boothId}<br>
+                    <strong>エリア:</strong> ${boothId.charAt(0)}エリア<br>
+                    <strong>詳細:</strong> 詳細情報は後日公開予定
+                `;
+            }
+            } else {
+                // 複数ブースの場合
+                const boothNames = boothIdArray.join('/');
+                boothTitle.textContent = `ブース ${boothNames}`;
+                
+                let combinedHTML = `<strong>ブース番号:</strong> ${boothNames}<br><br>`;
+                
+                boothIdArray.forEach((boothId, index) => {
+                    const booth = boothData[boothId];
+                    
+                    if (index > 0) {
+                        combinedHTML += '<hr style="margin: 10px 0; border: 1px solid #ddd;"><br>';
+                    }
+                    
+                    if (booth && booth.title) {
+                        combinedHTML += `<strong>${boothId}:</strong> ${booth.title}<br>`;
+                        
+                        if (booth.exhibitor_name) {
+                            combinedHTML += `<strong>出展者:</strong> ${booth.exhibitor_name}<br>`;
+                        }
+                        
+                        if (booth.category) {
+                            combinedHTML += `<strong>カテゴリ:</strong> ${booth.category}<br>`;
+                        }
+                        
+                        if (booth.description) {
+                            combinedHTML += `<strong>出展内容:</strong> ${booth.description}<br>`;
+                        }
+                        
+                        if (booth.special_info) {
+                            combinedHTML += `<strong>特記事項:</strong> ${booth.special_info}<br>`;
+                        }
+                        
+                        if (booth.website && booth.website !== 'https://example.com' && booth.website.includes('http')) {
+                            combinedHTML += `<strong>ウェブサイト:</strong> <a href="${booth.website}" target="_blank" rel="noopener">${booth.website}</a><br>`;
+                        }
+                        
+                        if (booth.contact && !booth.contact.includes('example.com')) {
+                            combinedHTML += `<strong>連絡先:</strong> ${booth.contact}<br>`;
+                        }
+                    } else {
+                        combinedHTML += `<strong>${boothId}:</strong> 詳細情報は後日公開予定<br>`;
+                        combinedHTML += `<strong>エリア:</strong> ${boothId.charAt(0)}エリア<br>`;
+                    }
+                    
+                    if (index < boothIdArray.length - 1) {
+                        combinedHTML += '<br>';
+                    }
+                });
+                
+                boothDetails.innerHTML = combinedHTML;
+            }
+
+            boothInfo.style.display = 'block';
+        }
+
+        // ブース情報を非表示
+        function hideBoothInfo() {
+            document.getElementById('boothInfo').style.display = 'none';
+        }
+
+        // SVGが読み込まれた後の処理とCSVデータの読み込み
+        window.addEventListener('load', function() {
+            // CSVデータを読み込み
+            loadBoothData();
+
+            const objectElement = document.querySelector('object');
+            if (objectElement) {
+                // SVGが既に読み込まれているかチェック
+                if (objectElement.contentDocument) {
+                    makeShowBoothInfoAvailableInSvg(objectElement.contentDocument);
+                }
+
+                // SVGの読み込み完了イベントをリッスン
+                objectElement.addEventListener('load', function() {
+                    if (objectElement.contentDocument) {
+                        makeShowBoothInfoAvailableInSvg(objectElement.contentDocument);
+                    }
+                });
+            }
+        });
+
+        // SVGドキュメント内でshowBoothInfo関数を利用可能にする
+        function makeShowBoothInfoAvailableInSvg(svgDoc) {
+            if (svgDoc && svgDoc.defaultView) {
+                // 親ウィンドウのshowBoothInfo関数をSVGのウィンドウに渡す
+                svgDoc.defaultView.showBoothInfo = window.showBoothInfo;
+                console.log('showBoothInfo関数をSVGドキュメントに渡しました。');
+            }
+        }
+
+        // Escキーでポップアップを閉じる
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hideBoothInfo();
+            }
+        });
+    </script>
+</body>
+</html>
