@@ -321,9 +321,9 @@
     <rect id="booth-E13" class="cls-2" x="395.67" y="921.18" width="17.01" height="51.02" transform="translate(808.35 1893.39) rotate(180)" onclick="showBoothInfo('E13')"/>
     <rect id="booth-F9" class="cls-19" x="518.55" y="919.23" width="17.01" height="51.02" onclick="showBoothInfo('F9')"/>
     <rect id="booth-F7" class="cls-19" x="518.55" y="782.09" width="17.01" height="51.02" onclick="showBoothInfo(['F7', 'F10'])"/>
-    <rect id="booth-G12" class="cls-26" x="726.3" y="881.52" width="17.01" height="51.02" onclick="showBoothInfo('G12')"/>
+    <rect class="cls-26" x="726.3" y="881.52" width="17.01" height="51.02"/>
     <rect class="cls-26" x="613.44" y="880.77" width="17.01" height="51.02"/>
-    <rect id="booth-G13" class="cls-26" x="767.12" y="935.12" width="17.01" height="51.02" onclick="showBoothInfo('G13')"/>
+    <rect class="cls-26" x="767.12" y="935.12" width="17.01" height="51.02"/>
     <rect class="cls-5" x="792.44" y="952.12" width="17.01" height="17.01" transform="translate(1601.89 1921.26) rotate(180)"/>
     <rect id="booth-G10" class="cls-25" x="719.91" y="623.12" width="17.01" height="51.02" transform="translate(1456.83 1297.27) rotate(180)" onclick="showBoothInfo('G10')"/>
     <rect id="booth-G8" class="cls-25" x="719.91" y="572.3" width="17.01" height="51.02" transform="translate(1456.83 1195.63) rotate(180)" onclick="showBoothInfo(['G8','G9'])"/>
